@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import Image from 'next/image';
+import { useLoading } from '@/contexts/LoadingContext';
 
 const Transparencia = () => {
     const heroRef = useRef<HTMLDivElement>(null);
@@ -9,14 +10,16 @@ const Transparencia = () => {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isLoading } = useLoading();
 
+  // Set initial hidden states immediately on mount
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Set initial states to prevent flash of unstyled content
+      // Set initial states immediately to prevent flash
       if (bgRef.current) {
         gsap.set(bgRef.current, {
           opacity: 0,
-          scale: 1.1, // Slight zoom for parallax effect
+          scale: 1.1,
         });
       }
       
@@ -24,7 +27,7 @@ const Transparencia = () => {
         gsap.set(titleRef.current, {
           opacity: 0,
           y: 50,
-          filter: 'blur(10px)', // Initial blur for smooth reveal
+          filter: 'blur(10px)',
         });
       }
 
@@ -32,10 +35,19 @@ const Transparencia = () => {
         gsap.set(subtitleRef.current, {
           opacity: 0,
           y: 30,
-          filter: 'blur(8px)', // Initial blur for smooth reveal
+          filter: 'blur(8px)',
         });
       }
+    }, heroRef);
 
+    return () => ctx.revert();
+  }, []);
+
+  // Set up intersection observer when loading completes
+  useEffect(() => {
+    if (isLoading) return;
+
+    const ctx = gsap.context(() => {
       // Check if element is in viewport with refined threshold
       const observer = new IntersectionObserver(
         (entries) => {
@@ -95,7 +107,7 @@ const Transparencia = () => {
     }, heroRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [isLoading]);
 
   return (
     <section 

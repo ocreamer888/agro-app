@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import Image from 'next/image';
 import Navbar from "@/components/NavBar";
+import { useLoading } from '@/contexts/LoadingContext';
 
 export default function Hero() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -12,14 +13,16 @@ export default function Hero() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const subtitleRef = useRef<HTMLParagraphElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { isLoading } = useLoading();
 
+  // Set initial hidden states immediately on mount
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Set initial states to prevent flash of unstyled content
+      // Set initial states immediately to prevent flash
       if (bgRef.current) {
         gsap.set(bgRef.current, {
           opacity: 0,
-          scale: 1.1, // Slight zoom for parallax effect
+          scale: 1.1,
         });
       }
       
@@ -27,7 +30,7 @@ export default function Hero() {
         gsap.set(logoRef.current, {
           opacity: 0,
           y: -30,
-          filter: 'blur(10px)', // Initial blur for smooth reveal
+          filter: 'blur(10px)',
         });
       }
 
@@ -35,7 +38,7 @@ export default function Hero() {
         gsap.set(titleRef.current, {
           opacity: 0,
           y: 50,
-          filter: 'blur(10px)', // Initial blur for smooth reveal
+          filter: 'blur(10px)',
         });
       }
 
@@ -43,81 +46,71 @@ export default function Hero() {
         gsap.set(subtitleRef.current, {
           opacity: 0,
           y: 30,
-          filter: 'blur(8px)', // Initial blur for smooth reveal
+          filter: 'blur(8px)',
         });
-      }
-
-      // Check if element is in viewport with refined threshold
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              // Professional timeline with refined timing
-              const tl = gsap.timeline({
-                defaults: { ease: 'power3.out' },
-              });
-
-              // 1. Background: Smooth fade + scale animation (parallax effect)
-              if (bgRef.current) {
-                tl.to(bgRef.current, {
-                  opacity: 1,
-                  scale: 1,
-                  duration: 1.2,
-                  ease: 'power2.out',
-                }, 0); // Start immediately
-              }
-
-              // 2. Logo: Smooth reveal with blur and slide
-              if (logoRef.current) {
-                tl.to(logoRef.current, {
-                  opacity: 1,
-                  y: 0,
-                  filter: 'blur(0px)',
-                  duration: 1,
-                  ease: 'expo.out', // Smooth exponential easing
-                }, 0.3); // Start 0.3s after background begins
-              }
-
-              // 3. Title: Smooth reveal after logo
-              if (titleRef.current) {
-                tl.to(titleRef.current, {
-                  opacity: 1,
-                  y: 0,
-                  filter: 'blur(0px)',
-                  duration: 1,
-                  ease: 'expo.out',
-                }, 0.6); // Start 0.6s after background (0.3s after logo starts)
-              }
-
-              // 4. Subtitle: Smooth reveal after title
-              if (subtitleRef.current) {
-                tl.to(subtitleRef.current, {
-                  opacity: 1,
-                  y: 0,
-                  filter: 'blur(0px)',
-                  duration: 0.9,
-                  ease: 'expo.out',
-                }, 0.9); // Start 0.9s after background (0.3s after title starts)
-              }
-
-              // Prevent re-triggering
-              observer.unobserve(entry.target);
-            }
-          });
-        },
-        { 
-          threshold: 0.15, // Trigger when 15% visible for earlier animation
-          rootMargin: '0px 0px -50px 0px', // Start slightly before fully in view
-        }
-      );
-
-      if (heroRef.current) {
-        observer.observe(heroRef.current);
       }
     }, heroRef);
 
     return () => ctx.revert();
   }, []);
+
+  // Start animation when loading completes
+  useEffect(() => {
+    if (isLoading) return;
+
+    const ctx = gsap.context(() => {
+      // Small delay to ensure smooth transition from loading screen
+      const tl = gsap.timeline({
+        delay: 0.2, // Brief pause after loading screen disappears
+        defaults: { ease: 'power3.out' },
+      });
+
+      // 1. Background: Smooth fade + scale animation (parallax effect)
+      if (bgRef.current) {
+        tl.to(bgRef.current, {
+          opacity: 1,
+          scale: 1,
+          duration: 1.2,
+          ease: 'power2.out',
+        }, 0);
+      }
+
+      // 2. Logo: Smooth reveal with blur and slide
+      if (logoRef.current) {
+        tl.to(logoRef.current, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 1,
+          ease: 'expo.out',
+        }, 0.3);
+      }
+
+      // 3. Title: Smooth reveal after logo
+      if (titleRef.current) {
+        tl.to(titleRef.current, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 1,
+          ease: 'expo.out',
+        }, 0.6);
+      }
+
+      // 4. Subtitle: Smooth reveal after title
+      if (subtitleRef.current) {
+        tl.to(subtitleRef.current, {
+          opacity: 1,
+          y: 0,
+          filter: 'blur(0px)',
+          duration: 0.9,
+          ease: 'expo.out',
+        }, 0.9);
+      }
+    }, heroRef);
+
+    return () => ctx.revert();
+  }, [isLoading]);
 
   return (
     <section 
