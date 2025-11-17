@@ -96,8 +96,8 @@ const Transparencia = () => {
           });
         },
         { 
-          threshold: 0.15, // Trigger when 15% visible for earlier animation
-          rootMargin: '0px 0px -50px 0px', // Start slightly before fully in view
+          threshold: 0.5, // Trigger when 15% visible for earlier animation
+          rootMargin: '0px', // Start slightly before fully in view
         }
       );
 
